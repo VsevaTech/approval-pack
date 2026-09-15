@@ -1,0 +1,18 @@
+services:
+  approval-pack:
+    build: .
+    image: approval-pack:latest
+    ports:
+      - "8000:8000"
+    environment:
+      # Reviewers open this URL, so change it when you expose the service.
+      APPROVAL_PACK_BASE_URL: ${APPROVAL_PACK_BASE_URL:-http://localhost:8000}
+      APPROVAL_PACK_OWNER_PASSWORD: ${APPROVAL_PACK_OWNER_PASSWORD:-}
+      APPROVAL_PACK_SECRET_KEY: ${APPROVAL_PACK_SECRET_KEY:-change-me}
+    volumes:
+      # Persist the database and snapshot files across container rebuilds.
+      - approval-data:/srv/app/data
+    restart: unless-stopped
+
+volumes:
+  approval-data:
