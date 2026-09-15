@@ -183,7 +183,7 @@ app/
     review.py        Public tokenised review + decision
   templates/         Jinja2, autoescaped
   static/            CSS + ~40 lines of progressive enhancement, no CDN
-tests/               119 tests
+tests/               120 tests
 examples/            Demo seed + dependency-free evidence verifier
 ```
 
@@ -331,7 +331,7 @@ the links you copy point at localhost.
 ## Tests
 
 ```bash
-pytest          # 119 tests
+pytest          # 120 tests
 ruff check .
 ```
 
