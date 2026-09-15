@@ -15,7 +15,6 @@ from app.services import ValidationError
 from app.storage import SnapshotStorage, StorageError
 from tests.factories import file_draft, text_draft
 
-
 # -- filenames -----------------------------------------------------------
 
 @pytest.mark.parametrize(

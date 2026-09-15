@@ -16,10 +16,10 @@ from sqlalchemy.orm import Session
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app import db as db_module  # noqa: E402
-from app.config import Settings, get_settings  # noqa: E402
-from app.services import ApprovalService  # noqa: E402
-from app.storage import SnapshotStorage  # noqa: E402
+from app import db as db_module
+from app.config import Settings, get_settings
+from app.services import ApprovalService
+from app.storage import SnapshotStorage
 
 ENV = {
     "APPROVAL_PACK_BASE_URL": "http://testserver",
