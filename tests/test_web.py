@@ -8,6 +8,9 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
+from app import db as db_module
+from app.models import Approval
+
 REVIEW_LINK = re.compile(r'value="(http://testserver/review/([^"]+))"')
 
 
@@ -133,14 +136,31 @@ def test_unknown_decision_value_returns_400(client):
     assert response.status_code == 400
 
 
-def test_expired_review_link_cannot_decide(client):
-    soon = datetime.now(UTC) + timedelta(seconds=1)
+def test_future_expiry_is_shown_on_the_review_page(client):
+    later = datetime.now(UTC) + timedelta(days=2)
     _, token, _ = create_via_http(
-        client, expires_at=soon.strftime("%Y-%m-%dT%H:%M:%S")
+        client, expires_at=later.strftime("%Y-%m-%dT%H:%M")
     )
-    import time
+    page = client.get(f"/review/{token}")
 
-    time.sleep(1.1)
+    assert "PENDING" in page.text
+    assert "expires" in page.text
+    assert "Your decision" in page.text
+
+
+def test_expired_review_link_cannot_decide(client):
+    """Move the stored deadline instead of sleeping.
+
+    Waiting on the wall clock would make this test depend on how fast the
+    machine running it happens to be; the behaviour under test is "the deadline
+    is in the past", so put it there directly.
+    """
+    approval_id, token, _ = create_via_http(client)
+
+    with db_module.get_session_factory()() as session:
+        approval = session.get(Approval, approval_id)
+        approval.expires_at = datetime.now(UTC) - timedelta(minutes=5)
+        session.commit()
 
     page = client.get(f"/review/{token}")
     assert "EXPIRED" in page.text
