@@ -96,7 +96,7 @@ class Approval(Base):
         DateTime(timezone=True), nullable=True
     )
 
-    decision: Mapped["Decision | None"] = relationship(
+    decision: Mapped[Decision | None] = relationship(
         back_populates="approval",
         uselist=False,
         cascade="all, delete-orphan",
