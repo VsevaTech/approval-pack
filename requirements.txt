@@ -1,0 +1,8 @@
+# Runtime dependencies. Pinned so a build today matches a build in six months.
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+SQLAlchemy==2.0.53
+pydantic==2.13.5
+pydantic-settings==2.15.0
+Jinja2==3.1.6
+python-multipart==0.0.32

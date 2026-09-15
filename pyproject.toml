@@ -1,0 +1,43 @@
+[project]
+name = "approval-pack"
+version = "0.1.0"
+description = "Know exactly what was approved — and which version."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = [
+    "ignore::DeprecationWarning:starlette.*",
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated.*",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = [".venv", "data", ".git"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # bugbear
+    "UP",   # pyupgrade
+    "C4",   # comprehensions
+    "SIM",  # simplify
+    "ARG",  # unused arguments
+    "RUF",
+]
+ignore = [
+    "B008",    # FastAPI dependency defaults in signatures are idiomatic
+    "RUF001",  # em dashes and typographic characters in prose are intentional
+    "RUF002",
+    "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ARG001", "E501"]
+"app/routers/*" = ["A002"]
