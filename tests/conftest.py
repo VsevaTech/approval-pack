@@ -52,7 +52,7 @@ def settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Settin
 
 
 @pytest.fixture
-def session(settings: Settings) -> Iterator[Session]:  # noqa: ARG001
+def session(settings: Settings) -> Iterator[Session]:
     factory = db_module.get_session_factory()
     with factory() as db_session:
         yield db_session
