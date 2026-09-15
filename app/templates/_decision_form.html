@@ -1,0 +1,43 @@
+{% if approval.decision %}
+  <section class="card decision decision-{{ approval.decision.decision.value|lower }}">
+    {% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+    <h2>Decision recorded: {{ approval.decision.decision.value }}</h2>
+    <dl class="kv">
+      <dt>Decided at</dt><dd>{{ approval.decision.decided_at_utc.strftime("%Y-%m-%d %H:%M:%S") }} UTC</dd>
+      <dt>Reviewer</dt><dd>{{ approval.decision.reviewer_name or "—" }}</dd>
+      <dt>Comment</dt><dd>{{ approval.decision.comment or "—" }}</dd>
+      <dt>Version approved</dt><dd class="mono wrap">{{ approval.decision.snapshot_sha256 }}</dd>
+    </dl>
+    <p class="hint">This approval is final. The content above can no longer change.</p>
+  </section>
+{% elif status == "EXPIRED" %}
+  <section class="card">
+    {% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+    <h2>Expired</h2>
+    <p>This review link expired on {{ approval.expires_at_utc.strftime("%Y-%m-%d %H:%M") }} UTC. No decision can be recorded.</p>
+  </section>
+{% else %}
+  <section class="card">
+    <h2>Your decision</h2>
+    {% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+    <form id="decision-form" method="post" action="/review/{{ token }}/decision"
+          data-swap-target="#decision-area">
+      <div class="grid-2">
+        <label>Your name <span class="opt">optional</span>
+          <input type="text" name="reviewer_name" maxlength="120" value="{{ form.reviewer_name or approval.reviewer_name or '' }}">
+        </label>
+        <label>Your email <span class="opt">optional</span>
+          <input type="email" name="reviewer_email" maxlength="254" value="{{ form.reviewer_email or approval.reviewer_email or '' }}">
+        </label>
+      </div>
+      <label>Comment <span class="opt">required when rejecting</span>
+        <textarea name="comment" rows="4" maxlength="5000">{{ form.comment or '' }}</textarea>
+      </label>
+      <div class="actions">
+        <button type="submit" name="decision" value="APPROVED" class="btn approve">Approve</button>
+        <button type="submit" name="decision" value="REJECTED" class="btn reject">Reject</button>
+      </div>
+      <p class="hint">Recorded: your decision, the time, your name/email if entered, your comment, and the SHA-256 of this exact version.</p>
+    </form>
+  </section>
+{% endif %}

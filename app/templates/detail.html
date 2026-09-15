@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "_status.html" import badge %}
+{% block title %}{{ approval.title }} · {{ app_name }}{% endblock %}
+{% block content %}
+<a class="back" href="/">← All approvals</a>
+<h1>{{ approval.title }}</h1>
+<p class="meta">
+  {{ badge(approval.effective_status.value) }}
+  <span class="mono">ID {{ approval.id }}</span>
+  · created {{ approval.created_at_utc.strftime("%Y-%m-%d %H:%M") }} UTC
+  {% if approval.expires_at_utc %}· expires {{ approval.expires_at_utc.strftime("%Y-%m-%d %H:%M") }} UTC{% endif %}
+</p>
+
+{% if approval.description %}<p class="description">{{ approval.description }}</p>{% endif %}
+
+{% if just_created %}
+<div class="alert success">Approval created. Send the review link below to your reviewer.</div>
+{% endif %}
+
+<section class="card">
+  <h2>Review link</h2>
+  <p class="hint">Anyone holding this link can record the decision. It contains 256 bits of randomness — it cannot be guessed or enumerated.</p>
+  <div class="linkrow">
+    <input type="text" id="review-link" class="mono" readonly value="{{ review_url }}">
+    <button type="button" class="btn" data-copy="review-link">Copy</button>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Snapshot</h2>
+  <dl class="kv">
+    <dt>SHA-256</dt><dd class="mono wrap">{{ approval.snapshot_sha256 }}</dd>
+    <dt>Size</dt><dd>{{ approval.snapshot_size }} bytes</dd>
+    <dt>Integrity</dt>
+    <dd>{% if integrity_ok %}<span class="ok">verified — stored content still hashes to the value above</span>
+        {% else %}<span class="bad">FAILED — stored content does not match the recorded hash</span>{% endif %}</dd>
+  </dl>
+  {% if approval.snapshot_kind.value == "TEXT" %}
+    <pre class="snapshot">{{ approval.snapshot_text }}</pre>
+  {% else %}
+    <p class="file">
+      📎 <strong>{{ approval.snapshot_filename }}</strong>
+      ({{ approval.snapshot_media_type }})
+      — <a href="/approvals/{{ approval.id }}/file">download</a>
+    </p>
+  {% endif %}
+</section>
+
+{% if approval.decision %}
+<section class="card decision decision-{{ approval.decision.decision.value|lower }}">
+  <h2>Decision: {{ approval.decision.decision.value }}</h2>
+  <dl class="kv">
+    <dt>Decided at</dt><dd>{{ approval.decision.decided_at_utc.strftime("%Y-%m-%d %H:%M:%S") }} UTC</dd>
+    <dt>Reviewer</dt>
+    <dd>{{ approval.decision.reviewer_name or "—" }}{% if approval.decision.reviewer_email %} &lt;{{ approval.decision.reviewer_email }}&gt;{% endif %}</dd>
+    <dt>Comment</dt><dd>{{ approval.decision.comment or "—" }}</dd>
+    <dt>Hash at decision</dt><dd class="mono wrap">{{ approval.decision.snapshot_sha256 }}</dd>
+    <dt>Version check</dt>
+    <dd>{% if approval.decision.snapshot_sha256 == approval.snapshot_sha256 %}
+          <span class="ok">MATCH — the decision applies to the content shown above</span>
+        {% else %}<span class="bad">MISMATCH</span>{% endif %}</dd>
+  </dl>
+</section>
+{% else %}
+<section class="card">
+  <h2>Awaiting decision</h2>
+  <p class="hint">
+    {% if approval.effective_status.value == "EXPIRED" %}
+      This approval expired before a decision was recorded. No decision can be made on it.
+    {% else %}
+      The snapshot is frozen the moment a decision is recorded.
+    {% endif %}
+  </p>
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>Evidence</h2>
+  <p>
+    <a class="btn" href="/approvals/{{ approval.id }}/evidence.html">Download HTML</a>
+    <a class="btn" href="/approvals/{{ approval.id }}/evidence.json">Download JSON</a>
+  </p>
+</section>
+{% endblock %}

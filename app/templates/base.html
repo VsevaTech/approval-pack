@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='13'%3E%E2%9C%93%3C/text%3E%3C/svg%3E">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">✓ {{ app_name }}</a>
+    <nav>
+      <a href="/">Approvals</a>
+      <a href="/approvals/new">New approval</a>
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    <p class="disclaimer">
+      Approval Pack records what was approved and which version. It is
+      <strong>not</strong> an electronic signature and has no legally binding
+      e-signature status.
+    </p>
+  </footer>
+</body>
+</html>

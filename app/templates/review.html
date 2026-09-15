@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_status.html" import badge %}
+{% block title %}Review: {{ approval.title }}{% endblock %}
+{% block content %}
+<h1>{{ approval.title }}</h1>
+<p class="meta">
+  {{ badge(status) }}
+  · created {{ approval.created_at_utc.strftime("%Y-%m-%d %H:%M") }} UTC
+  {% if approval.expires_at_utc %}· expires {{ approval.expires_at_utc.strftime("%Y-%m-%d %H:%M") }} UTC{% endif %}
+</p>
+{% if approval.description %}<p class="description">{{ approval.description }}</p>{% endif %}
+
+<section class="card">
+  <h2>What you are asked to approve</h2>
+  {% if approval.snapshot_kind.value == "TEXT" %}
+    <pre class="snapshot">{{ approval.snapshot_text }}</pre>
+  {% else %}
+    <p class="file">
+      📎 <strong>{{ approval.snapshot_filename }}</strong> ({{ approval.snapshot_size }} bytes)
+      — <a href="/review/{{ token }}/file">download</a>
+      {% if inline_viewable %}· <a href="/review/{{ token }}/file?inline=1" target="_blank" rel="noopener noreferrer">open</a>{% endif %}
+    </p>
+  {% endif %}
+  <p class="hashline">SHA-256 <code class="mono wrap">{{ approval.snapshot_sha256 }}</code></p>
+</section>
+
+<div id="decision-area">
+  {% include "_decision_form.html" %}
+</div>
+{% endblock %}

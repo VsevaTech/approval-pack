@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}New approval · {{ app_name }}{% endblock %}
+{% block content %}
+<h1>New approval</h1>
+<p class="lede">Freeze exactly what you are asking someone to approve.</p>
+
+{% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+
+<form method="post" action="/approvals" enctype="multipart/form-data" class="card form">
+  <label>Title <span class="req">*</span>
+    <input type="text" name="title" maxlength="200" required value="{{ form.title or '' }}">
+  </label>
+
+  <label>Description
+    <textarea name="description" rows="3" maxlength="10000">{{ form.description or '' }}</textarea>
+  </label>
+
+  <fieldset>
+    <legend>What is being approved <span class="req">*</span></legend>
+    <label>Text to approve
+      <textarea name="text" rows="9" placeholder="Paste the proposal, the budget, the wording…">{{ form.text or '' }}</textarea>
+    </label>
+    <p class="or">— or —</p>
+    <label>Upload a file
+      <input type="file" name="file" accept="{{ allowed_extensions|join(',') }}">
+    </label>
+    <p class="hint">
+      Max {{ max_upload_kib }} KiB. Accepted: {{ allowed_extensions|join(' ') }}.
+      Scriptable formats (html, js, svg) are refused on purpose.
+    </p>
+  </fieldset>
+
+  <div class="grid-2">
+    <label>Reviewer name <span class="opt">optional</span>
+      <input type="text" name="reviewer_name" maxlength="120" value="{{ form.reviewer_name or '' }}">
+    </label>
+    <label>Reviewer email <span class="opt">optional</span>
+      <input type="email" name="reviewer_email" maxlength="254" value="{{ form.reviewer_email or '' }}">
+    </label>
+  </div>
+
+  <label>Expires at (UTC) <span class="opt">optional</span>
+    <input type="datetime-local" name="expires_at" value="{{ form.expires_at or '' }}">
+  </label>
+
+  <button type="submit" class="btn primary">Create approval &amp; get link</button>
+</form>
+{% endblock %}

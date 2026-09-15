@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_status.html" import badge %}
+{% block title %}Approvals · {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Approvals</h1>
+{% if not approvals %}
+  <div class="empty">
+    <p>No approvals yet.</p>
+    <p><a class="btn" href="/approvals/new">Create the first one</a></p>
+  </div>
+{% else %}
+<table class="list">
+  <thead>
+    <tr><th>Title</th><th>Status</th><th>Created (UTC)</th><th>SHA-256</th></tr>
+  </thead>
+  <tbody>
+  {% for a in approvals %}
+    <tr>
+      <td><a href="/approvals/{{ a.id }}">{{ a.title }}</a></td>
+      <td>{{ badge(a.effective_status.value) }}</td>
+      <td class="mono">{{ a.created_at_utc.strftime("%Y-%m-%d %H:%M") }}</td>
+      <td class="mono hash-short" title="{{ a.snapshot_sha256 }}">{{ a.snapshot_sha256[:16] }}…</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}
