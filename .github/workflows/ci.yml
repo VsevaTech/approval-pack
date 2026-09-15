@@ -24,10 +24,10 @@ jobs:
         python-version: ["3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -59,15 +59,15 @@ jobs:
           "
 
   docker:
-    name: Docker build
+    name: Docker build & run
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Build image
+      - name: docker build
         run: docker build -t approval-pack:ci .
 
-      - name: Boot the container and check /healthz
+      - name: Boot the image and check /healthz
         run: |
           docker run -d --name approval-pack-ci -p 8000:8000 approval-pack:ci
           for i in $(seq 1 30); do
@@ -84,6 +84,54 @@ jobs:
         if: always()
         run: docker logs approval-pack-ci || true
 
-      - name: Stop container
+      - name: Stop the container
         if: always()
         run: docker rm -f approval-pack-ci || true
+
+  compose:
+    name: docker compose up --build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: docker compose up --build
+        run: docker compose up --build -d
+
+      - name: End-to-end check against the composed stack
+        run: |
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:8000/healthz >/dev/null && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8000/healthz
+          echo
+          # Create an approval, pull the review link out, approve through that
+          # link, and confirm the evidence hashes agree.
+          docker compose exec -T approval-pack python examples/seed_demo.py | tee seed.txt
+          TOKEN=$(grep -oP 'review/\K\S+' seed.txt)
+          ID=$(grep -oP 'Approval ID : \K\w+' seed.txt)
+          curl -fsS -X POST "http://127.0.0.1:8000/review/$TOKEN/decision" \
+            -d 'decision=APPROVED' -d 'comment=CI run' -d 'reviewer_name=CI' \
+            -o /dev/null
+          curl -fsS "http://127.0.0.1:8000/approvals/$ID/evidence.json" -o evidence.json
+          python - <<'PY'
+          import hashlib
+          import json
+
+          data = json.load(open("evidence.json"))
+          expected = hashlib.sha256(
+              b"Budget: EUR 2,500\nLaunch date: 1 October"
+          ).hexdigest()
+          assert data["status"] == "APPROVED", data["status"]
+          assert data["snapshot"]["sha256"] == expected, data["snapshot"]["sha256"]
+          assert data["decided_snapshot_sha256"] == expected
+          print("compose end-to-end OK:", expected)
+          PY
+
+      - name: Compose logs
+        if: always()
+        run: docker compose logs || true
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v || true
