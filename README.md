@@ -1,5 +1,9 @@
 # Approval Pack
 
+[![CI](https://github.com/VsevaTech/approval-pack/actions/workflows/ci.yml/badge.svg)](https://github.com/VsevaTech/approval-pack/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
+
 **Know exactly what was approved — and which version.**
 
 Most approvals in small companies happen in a chat window:
@@ -348,8 +352,12 @@ It is asserted for text snapshots, for file snapshots, and for a snapshot that
 was edited *before* the decision (the evidence must pin the version actually
 shown to the reviewer, not the first one).
 
-CI runs `ruff check .`, `pytest`, and a Docker image build on every push and
-pull request.
+CI runs on every push and pull request: `ruff check .` and `pytest` on Python
+3.12 and 3.13, a clean-start smoke test against an empty directory, a Docker
+image build that boots the container and polls `/healthz`, and a
+`docker compose up --build` job that drives the whole product flow — seed the
+demo approval, approve it through its review link, download the evidence, and
+assert both hashes equal the SHA-256 of the approved bytes.
 
 ---
 
